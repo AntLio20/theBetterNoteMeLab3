@@ -1,16 +1,27 @@
 package com.example.notemelab3;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import android.graphics.Color;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 
 public class EditNoteActivity extends AppCompatActivity {
@@ -18,6 +29,9 @@ public class EditNoteActivity extends AppCompatActivity {
     private String selectedColor = "#A7BED3";
     private Button lastSelectedButton;
     private Button color1, color2, color3, color4, color5;
+    private Button editImageButton;
+    private byte[] image = null;
+    private ImageView noteImageView;
     DBHandler dbHandler;
 
     @Override
@@ -25,6 +39,9 @@ public class EditNoteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_edit_note);
+
+        // Initialize the class-level ImageView
+        noteImageView = findViewById(R.id.noteImageView);
 
         Bundle bundle = getIntent().getExtras();
         assert bundle != null;
@@ -50,11 +67,24 @@ public class EditNoteActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Retrieve the image byte array from the database (assuming dbHandler can retrieve image data)
+        byte[] imageData = dbHandler.getImageById(id); // You may need to implement this method in DBHandler.
+
+        if (imageData != null) {
+            image = imageData;
+            noteImageView.setVisibility(View.VISIBLE);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+            noteImageView.setImageBitmap(bitmap);
+        }
+
         Button saveButton = findViewById(R.id.saveButton);
         saveButton.setOnClickListener(v -> saveNote(id));
 
         Button cancelButton = findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(v -> finish());
+
+        editImageButton = findViewById(R.id.editImageButton);
+        editImageButton.setOnClickListener(v -> displayImagePopUp(v));
 
         color1 = findViewById(R.id.color1);
         color1.setOnClickListener(v -> changeNoteColor("#A7BED3", color1));
@@ -117,7 +147,7 @@ public class EditNoteActivity extends AppCompatActivity {
             return;
         }
 
-        long result = dbHandler.updateNote(id, title, subtitle, description, selectedColor);
+        long result = dbHandler.updateNote(id, title, subtitle, description, selectedColor, image);
         if (result != -1) {
             Toast.makeText(this, "Note saved", Toast.LENGTH_SHORT).show();
 
@@ -126,4 +156,95 @@ public class EditNoteActivity extends AppCompatActivity {
             Toast.makeText(this, "Error saving note", Toast.LENGTH_SHORT).show();
         }
     }
+
+    public void displayImagePopUp(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        MenuInflater inflater = popupMenu.getMenuInflater();
+        inflater.inflate(R.menu.imagepopup, popupMenu.getMenu());
+
+        popupMenu.setGravity(Gravity.END);
+
+        // Set the listener for menu item clicks
+        popupMenu.setOnMenuItemClickListener(menuItem -> {
+            int itemId = menuItem.getItemId(); // Get the clicked menu item ID
+            if (itemId == R.id.selectImage) {
+                selectImage(); // Call selectImage method
+                return true;
+            } else if (itemId == R.id.captureImage) {
+                captureImage(); // Call captureImage method
+                return true;
+            }
+            return false; // Return false if no valid item was clicked
+        });
+
+        popupMenu.show(); // Show the popup menu
+    }
+
+    // Activity result launcher for getting an image from the gallery
+    private final ActivityResultLauncher<String> pickImageLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    try {
+                        InputStream inputStream = getContentResolver().openInputStream(uri);
+                        byte[] byteArray = new byte[inputStream.available()];
+                        inputStream.read(byteArray);
+                        image = byteArray;
+
+                        // Set the selected image in the ImageView
+                        noteImageView.setImageURI(uri);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+    // Activity result launcher for capturing an image from the camera
+    private final ActivityResultLauncher<Void> captureImageLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicturePreview(), bitmap -> {
+                if (bitmap != null) {
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    image = stream.toByteArray();
+
+                    // Set the captured image in the ImageView
+                    noteImageView.setImageBitmap(bitmap);
+                }
+            });
+
+    // Method to handle selecting an image from the gallery
+    public void selectImage() {
+        pickImageLauncher.launch("image/*");
+    }
+
+    // Method to handle capturing an image using the camera
+    public void captureImage() {
+        captureImageLauncher.launch(null);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save the image byte array to the instance state
+        if (image != null) {
+            outState.putByteArray("image_data", image);
+        }
+        // Save other fields like selectedColor if necessary
+        outState.putString("selected_color", selectedColor);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // Restore the image byte array from the instance state
+        if (savedInstanceState.containsKey("image_data")) {
+            image = savedInstanceState.getByteArray("image_data");
+            if (image != null) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+                noteImageView.setImageBitmap(bitmap);
+            }
+        }
+        // Restore other fields like selectedColor if necessary
+        selectedColor = savedInstanceState.getString("selected_color", "#A7BED3");
+    }
+
 }

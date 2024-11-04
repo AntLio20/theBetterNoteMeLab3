@@ -34,25 +34,26 @@
     <LinearLayout
         android:id="@+id/noteLayout"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="450dp"
         android:layout_marginStart="25dp"
+        android:layout_marginTop="30dp"
         android:layout_marginEnd="25dp"
-        android:layout_marginBottom="12dp"
+        android:background="#A7BED3"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/colorLayout"
+        app:layout_constraintBottom_toTopOf="@+id/editImageButton"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editNote"
-        app:layout_constraintVertical_bias="0.764"
-        android:background="#A7BED3">
+        app:layout_constraintVertical_bias="0.333">
 
         <EditText
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:ems="10"
-            android:inputType="text"
-            android:hint="@string/title" />
+            android:hint="@string/title"
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/subtitle"
@@ -62,15 +63,23 @@
             android:hint="@string/subtitle"
             android:inputType="text" />
 
+
+
         <EditText
             android:id="@+id/description"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="175dp"
             android:ems="10"
             android:gravity="start|top"
             android:hint="@string/description"
             android:inputType="textMultiLine" />
 
+        <ImageView
+            android:id="@+id/noteImageView"
+            android:layout_width="match_parent"
+            android:layout_height="166dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter" />
 
     </LinearLayout>
 
@@ -186,5 +195,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
+    <Button
+        android:id="@+id/editImageButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:text="@string/edit_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/noteLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

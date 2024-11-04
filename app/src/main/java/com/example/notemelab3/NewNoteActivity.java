@@ -64,8 +64,6 @@ public class NewNoteActivity extends AppCompatActivity {
                 }
             });
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,9 +137,12 @@ public class NewNoteActivity extends AppCompatActivity {
         else if (description.isEmpty()) {
             Toast.makeText(this, "Please enter note content", Toast.LENGTH_SHORT).show();
             return;
+        }else if (image == null) {
+            Toast.makeText(this, "Please enter note image", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        long result = dbHandler.addNote(title, subtitle, description, selectedColor);
+        long result = dbHandler.addNote(title, subtitle, description, selectedColor, image);
         if (result != -1) {
             Toast.makeText(this, "Note saved", Toast.LENGTH_SHORT).show();
 

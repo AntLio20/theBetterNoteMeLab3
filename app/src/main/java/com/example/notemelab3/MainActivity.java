@@ -78,7 +78,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewInter
                 String subtitle = cursor.getString(cursor.getColumnIndexOrThrow("subtitle"));
                 String text = cursor.getString(cursor.getColumnIndexOrThrow("text"));
                 String color = cursor.getString(cursor.getColumnIndexOrThrow("color"));
-                noteList.add(new Note(id, title, subtitle, text, color));
+                byte[] image = cursor.getBlob(cursor.getColumnIndexOrThrow("image"));
+                noteList.add(new Note(id, title, subtitle, text, color, image));
             } while (cursor.moveToNext());
             noNotesMessage.setVisibility(View.GONE);
         } else {

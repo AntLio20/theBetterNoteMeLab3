@@ -1,9 +1,12 @@
 package com.example.notemelab3;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,7 +28,6 @@ public class NoteMeAdapter extends RecyclerView.Adapter<NoteMeAdapter.NoteViewHo
     @NonNull
     @Override
     public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.main_activity_note, parent, false);
         return new NoteViewHolder(view, recyclerViewInterface);
@@ -33,19 +35,25 @@ public class NoteMeAdapter extends RecyclerView.Adapter<NoteMeAdapter.NoteViewHo
 
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, int position) {
-
         Note note = filteredNotes.get(position);
 
         holder.title.setText(note.getTitle());
         holder.subtitle.setText(note.getSubtitle());
         holder.text.setText(note.getText());
-
         holder.itemView.setBackgroundColor(Color.parseColor(note.getColor()));
+
+        byte[] imageData = note.getImage();
+        if (imageData != null && imageData.length > 0) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+            holder.noteImageView.setImageBitmap(bitmap);
+            holder.noteImageView.setVisibility(View.VISIBLE); // Make the image visible
+        } else {
+            holder.noteImageView.setVisibility(View.GONE); // Hide if there's no image
+        }
     }
 
     @Override
     public int getItemCount() {
-
         return filteredNotes.size();
     }
 
@@ -68,12 +76,14 @@ public class NoteMeAdapter extends RecyclerView.Adapter<NoteMeAdapter.NoteViewHo
 
     public static class NoteViewHolder extends RecyclerView.ViewHolder {
         public TextView title, subtitle, text;
+        public ImageView noteImageView;
 
         public NoteViewHolder(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
             super(itemView);
             title = itemView.findViewById(R.id.noteTitle);
             subtitle = itemView.findViewById(R.id.noteSubtitle);
             text = itemView.findViewById(R.id.noteText);
+            noteImageView = itemView.findViewById(R.id.noteImageView);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

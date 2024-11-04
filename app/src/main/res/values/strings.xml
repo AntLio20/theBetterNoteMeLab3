@@ -18,4 +18,5 @@
     <string name="select_image">Select Image</string>
     <string name="capture_image">Capture Image</string>
     <string name="select_image_btn">Select Image</string>
+    <string name="edit_image">Edit Image</string>
 </resources>
